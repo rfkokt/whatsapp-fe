@@ -3,6 +3,7 @@ import {Table, Input, Button, Popconfirm, Form, message} from 'antd';
 import moment from "moment";
 import 'moment/locale/id'
 import axios from "axios";
+import ImportExcel from "./ImportExcel";
 
 const EditableContext = React.createContext(null);
 
@@ -89,7 +90,12 @@ const EditableCell = ({
 class EditableTable extends React.Component {
     constructor(props) {
         super(props);
+
         this.columns = [
+            {
+                title: 'No',
+                dataIndex: "key",
+            },
             {
                 title: 'Nama',
                 dataIndex: 'name',
@@ -109,13 +115,23 @@ class EditableTable extends React.Component {
                 title: 'Kirim Pesan',
                 dataIndex: 'send',
                 render: (_, record) => (
-                    <Button
-                        onClick={() => this.sendMessage(record)}
-                        type="primary"
-                        style={{
-                            marginBottom: 16,
-                        }}
-                    >Kirim</Button>
+                    <>
+                        <Button
+                            onClick={() => this.sendMessage(record, true)}
+                            type="primary"
+                            style={{
+                                marginBottom: 16,
+                            }}
+                        >Kirim</Button>
+                        &nbsp;
+                        <Button
+                            onClick={() => this.sendMessage(record, false)}
+                            type="danger"
+                            style={{
+                                marginBottom: 16,
+                            }}
+                        >Reschedule</Button>
+                    </>
                 )
             },
             {
@@ -144,7 +160,7 @@ class EditableTable extends React.Component {
     handleAdd = () => {
         const {count, dataSource} = this.state;
         const newData = {
-            key: count,
+            key: count + 1,
             name: `Nama ${count}`,
             nomor: '08xxx',
             tanggal: moment().add(1, 'days').format("dddd,Do MMMM YYYY")
@@ -164,7 +180,7 @@ class EditableTable extends React.Component {
         });
     };
 
-    sendMessage = (e) => {
+    sendMessage = (e, sekarang) => {
         const url = `http://localhost:8000/send-message`
         const config = {
             headers: {
@@ -175,7 +191,15 @@ class EditableTable extends React.Component {
         const params = new URLSearchParams()
         // params.append('sender', 'Ridho')
         params.append('number', `${e.nomor}`)
-        params.append('message', `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+        params.append('message', sekarang ? `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
+
+*Note :*
+- Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
+- Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp` :
+            `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+Mohon maaf tidak sesuai dengan jadwal yang diinginkan karena kouta pada hari tersebut sudah full 12 pasien🙏🏻
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
 
 *Note :*
@@ -185,20 +209,26 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
         axios.post(url, params, config)
             .then((data) => {
                 if (data.data.status) {
-                    message.success(`Pesan berhasil dikirim ke nomor ${e.nomor}`);
+                    message.success(`Pesan berhasil dikirim ke nomor ${e.nomor} dengan nama ${e.name}`);
                     const dataSource = [...this.state.dataSource];
                     this.setState({
                         dataSource: dataSource.filter((item) => item.key !== e.key),
                     });
                 } else {
-                    message.error(`Pesan gagal dikirim ke nomor ${e.nomor}`);
+                    const hide = message.error(`Pesan gagal dikirim ke nomor ${e.nomor}`);
+                    setTimeout(hide, 2500);
                 }
-            })
+            }).catch((err) => {
+            if (err) {
+                const hide = message.error(`Pesan gagal dikirim ke nomor ${e.nomor} karena nomor tidak terdaftar`);
+                setTimeout(hide, 2500);
+            }
+        })
 
     }
 
 
-    sendMessageAll = () => {
+    sendMessageAll = (sekarang) => {
         this.state.dataSource.map((item) => {
 
 
@@ -212,7 +242,15 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
             const params = new URLSearchParams()
             // params.append('sender', 'Ridho')
             params.append('number', `${item.nomor}`)
-            params.append('message', `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+            params.append('message', sekarang ? `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
+
+*Note :*
+- Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
+- Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp` :
+                `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+Mohon maaf tidak sesuai dengan jadwal yang diinginkan karena kouta pada hari tersebut sudah full 12 pasien🙏🏻
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
 
 *Note :*
@@ -224,14 +262,33 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
                     if (data.data.status) {
                         message.success(`Pesan berhasil dikirim ke nomor ${item.nomor} dengan nama ${item.name}`);
                     } else {
-                        message.error(`Pesan gagal dikirim ke nomor ${item.nomor}`);
+                        const hide = message.error(`Pesan gagal dikirim ke nomor ${item.nomor}`);
+                        setTimeout(hide, 2500);
                     }
-                })
+                }).catch((err) => {
+                if (err) {
+                    const hide = message.error(`Pesan gagal dikirim ke nomor ${item.nomor} karena nomor tidak terdaftar`);
+                    setTimeout(hide, 2500);
+                }
+            })
+        })
+    }
+
+    getDataSource = (e) => {
+        this.setState({
+            dataSource: e
+        })
+    }
+
+    kosongkanData = () => {
+        this.setState({
+            dataSource: []
         })
     }
 
     render() {
         const {dataSource} = this.state;
+        console.log('testing muncuul gk')
         const components = {
             body: {
                 row: EditableRow,
@@ -265,6 +322,17 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
                 >
                     Tambah Penerima Pesan
                 </Button>
+                &nbsp;
+                <Button
+                    onClick={this.kosongkanData}
+                    type="danger"
+                    style={{
+                        marginBottom: 16,
+                    }}
+                >
+                    Kosongkan
+                </Button>
+                <ImportExcel dataSource={this.getDataSource.bind(this)}/>
                 <Table
                     components={components}
                     rowClassName={() => 'editable-row'}
@@ -274,12 +342,19 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
                 />
                 <br/>
                 <Button
-                    onClick={() => this.sendMessageAll()}
+                    onClick={() => this.sendMessageAll(true)}
                     type="primary"
                     style={{
                         marginBottom: 16,
                     }}
-                >Kirim Semua</Button>
+                >Kirim Semua</Button> &nbsp;
+                <Button
+                    onClick={() => this.sendMessageAll(false)}
+                    type="danger"
+                    style={{
+                        marginBottom: 16,
+                    }}
+                >Reschedule Semua</Button>
             </div>
         );
     }
