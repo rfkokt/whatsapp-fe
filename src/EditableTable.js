@@ -110,6 +110,7 @@ class EditableTable extends React.Component {
             {
                 title: 'Tanggal',
                 dataIndex: 'tanggal',
+                editable: true,
             },
             {
                 title: 'Kirim Pesan',
@@ -189,7 +190,6 @@ class EditableTable extends React.Component {
             }
         }
         const params = new URLSearchParams()
-        // params.append('sender', 'Ridho')
         params.append('number', `${e.nomor}`)
         params.append('message', sekarang ? `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
