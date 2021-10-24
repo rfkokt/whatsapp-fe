@@ -127,11 +127,19 @@ class EditableTable extends React.Component {
                         &nbsp;
                         <Button
                             onClick={() => this.sendMessage(record, false)}
-                            type="danger"
+                            type="warning"
                             style={{
                                 marginBottom: 16,
                             }}
                         >Reschedule</Button>
+                         &nbsp;
+                        <Button
+                            onClick={() => this.bukanHariKerja(record)}
+                            type="danger"
+                            style={{
+                                marginBottom: 16,
+                            }}
+                        >Hari Libur</Button>
                     </>
                 )
             },
@@ -182,7 +190,7 @@ class EditableTable extends React.Component {
     };
 
     sendMessage = (e, sekarang) => {
-        const url = `https://whatsapp-botnew.herokuapp.com/send-message`
+        const url = `http://localhost:8000/send-message`
         const config = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -190,22 +198,28 @@ class EditableTable extends React.Component {
             }
         }
         const params = new URLSearchParams()
+        // params.append('sender', 'Ridho')
         params.append('number', `${e.nomor}`)
-        params.append('message', sekarang ? `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+        params.append('message', sekarang ? `Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+Mohon balas dengan *YA* bila datang, atau *TIDAK* bila ingin membatalkan reservasi (bila tidak membalas WhatsApp konfirmasi ini kami anggap cancel). 
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
-
+        
 *Note :*
 - Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
 - Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
-- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp` :
-            `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp
+- Pasien diharapkan sarapan terlebih dahulu sebelum datang ke Puskesmas Kecamatan Jatinegara
+        ` :
+            `Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* 'sudah terdaftar sebagai pasien reservasi pada hari' *${e.tanggal}*.
 Mohon maaf tidak sesuai dengan jadwal yang diinginkan karena kouta pada hari tersebut sudah full 12 pasien🙏🏻
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
 
 *Note :*
 - Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
 - Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
-- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp`)
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp
+- Pasien diharapkan sarapan terlebih dahulu sebelum datang ke Puskesmas Kecamatan Jatinegara
+`)
         axios.post(url, params, config)
             .then((data) => {
                 if (data.data.status) {
@@ -227,12 +241,51 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
 
     }
 
+    bukanHariKerja =(e)=>{
+        const url = `http://localhost:8000/send-message`
+        const config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Access-Control-Allow-Origin': '*',
+            }
+        }
+        const params = new URLSearchParams()
+        // params.append('sender', 'Ridho')
+        params.append('number', `${e.nomor}`)
+        params.append('message', `Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${e.name}* sudah terdaftar sebagai pasien reservasi pada hari *${e.tanggal}*.
+Mohon maaf tidak sesuai dengan jadwal yang di inginkan karena tanggal tersebut bukan jadwal operasional layanan gigi Puskesmas Kecamatan Jatinegara🙏🏻.
+Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
+        
+        *Note :*
+        - Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
+        - Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
+        - Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp`)
+        axios.post(url, params, config)
+            .then((data) => {
+                if (data.data.status) {
+                    message.success(`Pesan berhasil dikirim ke nomor ${e.nomor} dengan nama ${e.name}`);
+                    const dataSource = [...this.state.dataSource];
+                    this.setState({
+                        dataSource: dataSource.filter((item) => item.key !== e.key),
+                    });
+                } else {
+                    const hide = message.error(`Pesan gagal dikirim ke nomor ${e.nomor}`);
+                    setTimeout(hide, 2500);
+                }
+            }).catch((err) => {
+            if (err) {
+                const hide = message.error(`Pesan gagal dikirim ke nomor ${e.nomor} karena nomor tidak terdaftar`);
+                setTimeout(hide, 2500);
+            }
+        })
+    }
+
 
     sendMessageAll = (sekarang) => {
         this.state.dataSource.map((item) => {
 
 
-            const url = `https://whatsapp-botnew.herokuapp.com/send-message`
+            const url = `http://localhost:8000/send-message`
             const config = {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -242,21 +295,26 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
             const params = new URLSearchParams()
             // params.append('sender', 'Ridho')
             params.append('number', `${item.nomor}`)
-            params.append('message', sekarang ? `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+            params.append('message', sekarang ? `Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+mohon balas dengan *YA* bila datang, atau *TIDAK* bila ingin membatalkan reservasi (bila tidak membalas WhatsApp konfirmasi ini kami anggap cancel). 
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
 
 *Note :*
 - Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
 - Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
-- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp` :
-                `Selamat malam. Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp
+- Pasien diharapkan sarapan terlebih dahulu sebelum datang ke Puskesmas Kecamatan Jatinegara
+` :
+                `Kami poli gigi Puskesmas Kecamatan Jatinegara ingin menginformasikan atas nama *${item.name}* sudah terdaftar sebagai pasien reservasi pada hari *${item.tanggal}*.
 Mohon maaf tidak sesuai dengan jadwal yang diinginkan karena kouta pada hari tersebut sudah full 12 pasien🙏🏻
 Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan dgn kedatangan. Demikian informasi yg kami sampaikan. Terima kasih, Salam Sehat🙏🏻☺️
 
 *Note :*
 - Pelayanan tindakan gigi sesuai dgn no urut kedatangan pasien
 - Sebelum dilakukan tindakan gigi pasien akan di swab antigen secara Gratis di ruang layanan gigi
-- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp`)
+- Setiap pasien Wajib membawa/mengirim (WA) foto gigi yg di keluhkan di hp
+- Pasien diharapkan sarapan terlebih dahulu sebelum datang ke Puskesmas Kecamatan Jatinegara
+`)
             axios.post(url, params, config)
                 .then((data) => {
                     if (data.data.status) {
