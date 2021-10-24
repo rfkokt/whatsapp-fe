@@ -285,7 +285,7 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
         this.state.dataSource.map((item) => {
 
 
-            const url = `http://localhost:8000/send-message`
+            const url = `https://whatsapp-botnew.herokuapp.com/send-message`
             const config = {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
