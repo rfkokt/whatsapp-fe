@@ -62,13 +62,15 @@ class ImportExcel extends Component {
 
     getDataExcel = () => {
         const dataSource = []
+        const tanggal = this.state.sheets
+        const tanggalInput= tanggal[0].data[2]
         this.state.sheets.map((item, index) => {
-            item.data.slice(1).map((i, x) => {
+            item.data.slice(4).map((i, x) => {
                 dataSource.push({
                     "key": x + 1,
-                    "name": i[0],
-                    "nomor": i[1],
-                    "tanggal": i[2],
+                    "name": i[1],
+                    "nomor": i[3],
+                    "tanggal": tanggalInput,
                 })
             })
             this.setState({
