@@ -190,7 +190,7 @@ class EditableTable extends React.Component {
     };
 
     sendMessage = (e, sekarang) => {
-        const url = `http://localhost:8000/send-message`
+        const url = `https://whatsapp-botnew.herokuapp.com/send-message`
         const config = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -242,7 +242,7 @@ Untuk pendaftaran diloket dimulai pukul 07.30-09.00, nomer antrian disesuaikan d
     }
 
     bukanHariKerja =(e)=>{
-        const url = `http://localhost:8000/send-message`
+        const url = `https://whatsapp-botnew.herokuapp.com/send-message`
         const config = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
